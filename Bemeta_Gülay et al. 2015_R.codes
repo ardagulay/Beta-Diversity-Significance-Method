@@ -97,8 +97,8 @@
 ##        "ANY"
 ##----------------------------------------------------------------------------------------------------
 
-   unifrac_weighted=c(TRUE) #select weighted or unweighted by writing "TRUE" or "FALSE" for unifrac analysis 
-   
+   unifrac_weighted=c(TRUE) #select weighted or unweighted by writing "TRUE" or "FALSE" if you decided to use the unifrac analysis. If you don't select the "unifrac",this is not important. 
+
 ##----------------------------------------------------------------------------------------------------
 
 #Format adjustment
