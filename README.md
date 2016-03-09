@@ -6,4 +6,4 @@ Authors: Arda Gülay, Barth F. Smets
 First published: 14 February 2015
 DOI: 10.1111/1462-2920.12748
 
-Application of this methods can also be found in the manuscript titled "“Ecological patterns, diversity and core taxa of microbial communities in groundwater-fed rapid gravity filters” in ISME journal.
+Application of this methods can also be found in the manuscript titled "“Ecological patterns, diversity and core taxa of microbial communities in groundwater-fed rapid gravity filters” in ISME journal. (http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej201616a.html)
