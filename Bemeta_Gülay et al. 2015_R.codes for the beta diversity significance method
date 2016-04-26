@@ -45,14 +45,14 @@
 # Import phylogenetic tree file
    read_tree("rep_set_from_unaligned.tree")->c
 
-# Below is the R-codes for importing "species_table" based data using outputs ("otutable","sample.data") (you can still use this if you do not have a phylogenetic tree)
-# Select the distance method from below list rather than "unifrac" if you don't have an phylogenetic tree)
+#Below is "species_table" based data import R-codes using outputs ("otutable","sample.data") (you can still use this if you do not have
+#a phylogenetic tree; select the distance method from below list rather than "unifrac")
 
 ## read.table("otutable_for_R_code.txt", header = TRUE)->sample_txt
 ## otu_table(sample_otutable.txt, taxa_are_rows=TRUE)->sample_biom
 ## import_qiime_sample_data("Sample_data.txt")->b
-##---------------------------------------------------------------------------------------------
-## An example otutable: column names are samples, row names are species (could also be species names), values are species counts:
+## read_tree("rep_set_from_unaligned.tree")->c ##If you have the phylogenetic tree.
+##An example otutable: column names are samples, row names are species (could also be species names), values are species counts:
 ##   ISL.F2.Top.b ISL.F2.Com.b ISL.F2.Top.a ISL.F7.Com.a 
 ## 0            0            3            0            7
 ## 1            5            0            1            0
@@ -69,11 +69,13 @@
 ##   ISL.F2.Top.a	Meta2
 ##   ISL.F2.Top.b	Meta2
 ##   ISL.F2.Top.c	Meta2					
-##----------------------------------------------------------------------------------------------------
 	
+
 #Option selections:
 
-   distance_method<-c("unifrac") #select the distance method from below:
+   distance_method<-c("unifrac") 
+
+###select the distance method from below:
 
 ##      UniFrac        DPCoA          JSD     vegdist1     vegdist2 
 ##    "unifrac"      "dpcoa"        "jsd"  "manhattan"  "euclidean" 
@@ -95,30 +97,27 @@
 ##         "gl"          "z"    "maximum"     "binary"  "minkowski" 
 ##   designdist 
 ##        "ANY"
-##----------------------------------------------------------------------------------------------------
 
-   unifrac_weighted=c(TRUE) #select weighted or unweighted by writing "TRUE" or "FALSE" if you decided to use the unifrac analysis. If you don't select the "unifrac",this is not important. 
-
-##----------------------------------------------------------------------------------------------------
+   unifrac_weighted=c(TRUE) #select weighted or unweighted by writing "TRUE" or "FALSE" for unifrac analysis 
 
 #Format adjustment
 
-   merge_phyloseq(sample_biom,b,c)->sample
-   merge_samples(sample,"Description")->sample_meta
-   row.names(sample_data(sample_meta))->j
+merge_phyloseq(sample_biom,b,c)->sample
+merge_samples(sample,"Description")->sample_meta
+row.names(sample_data(sample_meta))->j
 
 #listing descriptions
-    
-   list_subsamples_phyloseq<-list()
-   otutables_in_meta<-list()
-   Distance_matrix_list<-list()
-   Data_quantile_all<-list()
-   Data_mean_all<-list()
-   Quantitable_list<-list()
-   MeanTable_list<-list()
-   meta_tables<-list()
-   merged_otutables<-list()
-   rarified_otutables<-list()
+
+list_subsamples_phyloseq<-list()
+otutables_in_meta<-list()
+Distance_matrix_list<-list()
+Data_quantile_all<-list()
+Data_mean_all<-list()
+Quantitable_list<-list()
+MeanTable_list<-list()
+meta_tables<-list()
+merged_otutables<-list()
+rarified_otutables<-list()
 
 for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_meta)))," "))))
 {
@@ -132,33 +131,33 @@ for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_met
     melted_distance_matrix<-c()
     filtered_list<-c()
     sample_size<-min(sample_sums(merged_otutables[[i]]))
-
- #Calculation of rarified otutables:
-
- ##As a defult: samples size is the lowest sample size among samples of each Meta-group.
- ##On the other hand, you can determine your own threshold with "sample.size=" option of "rarefy_even_depth" command below.
-   
+    
+    #Calculation of rarified otutables:
+    
+    ##As a defult: samples size is the lowest sample size among samples of each Meta-group.
+    ##On the other hand, you can determine your own threshold with "sample.size=" option of "rarefy_even_depth" command below.
+    
     sample.size = min(sample_sums(merged_otutables[[i]]))
-
+    
     for (s in 1:10)
     {
         rarified_otutables[[s]] <- rarefy_even_depth(merged_otutables[[i]], replace=TRUE, trimOTUs=FALSE, rngseed=FALSE,sample.size=sample_size)
         subsampled_merged_otutables<- cbind(subsampled_merged_otutables,otu_table(rarified_otutables[[s]]))
     }
-
- ##Changing colnames in subsampled otutables for unifrac analysis:
-  
-       for (k in seq(from=(length(colnames(otu_table(rarified_otutables[[1]])))), to=(length(colnames(otu_table(rarified_otutables[[1]])))*10), by=(length(colnames(otu_table(rarified_otutables[[1]])))))) 
+    
+    ##Changing colnames in subsampled otutables for unifrac analysis:
+    
+    for (k in seq(from=(length(colnames(otu_table(rarified_otutables[[1]])))), to=(length(colnames(otu_table(rarified_otutables[[1]])))*10), by=(length(colnames(otu_table(rarified_otutables[[1]])))))) 
     {
         if (k==length(colnames(otu_table(rarified_otutables[[1]])))*10) break
         for (m in 1:length(colnames(otu_table(rarified_otutables[[1]]))))
         {
             colnames(subsampled_merged_otutables)[[k+m]]<-paste(colnames(subsampled_merged_otutables)[[m]], k, sep = "_")
         }
-      }
-       
+    }
+    
     OTU1 <- otu_table(subsampled_merged_otutables, taxa_are_rows=TRUE)
-    subsamples_phyloseq<-phyloseq(OTU1,c)
+    subsamples_phyloseq<-phyloseq(OTU1)
     
     list_subsamples_phyloseq[[i]]<- subsamples_phyloseq
     
@@ -167,8 +166,8 @@ for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_met
     
     list_subsamples_phyloseq[[i]] <- prune_taxa(taxa_sums(list_subsamples_phyloseq[[i]]) > 0, list_subsamples_phyloseq[[i]])
     
- ##Calculation of distance matrix
-
+    ##Calculation of distance matrix
+    
     if (distance_method=="unifrac")
     {
         Distance_matrix_list[[i]] <- UniFrac(list_subsamples_phyloseq[[i]], weighted=unifrac_weighted, normalized=TRUE, parallel=FALSE, fast=TRUE)
@@ -209,42 +208,42 @@ for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_met
     Data_quantile_all<-append(Data_quantile_all,list(Data_quantile))
     Data_mean_all<-append(Data_mean_all,list(Data_mean))
     
- ##Calculation of algorithm results
+    ##Calculation of algorithm results
     
     QuantileTable<-c()
-
-     for (w in unique(as.data.frame.table(t(as.data.frame(Data_quantile_all[[i]])))$Var2)) {
-       ww<-paste("^",w,"$",sep = "")
     
-       filtered0<-as.data.frame.table(t(as.data.frame(Data_quantile_all[[i]])))[grep(ww, as.data.frame.table(t(as.data.frame(Data_quantile_all[[i]])))$Var2, ignore.case=F),] #Quantile region
-       filtered1<-filtered0[grep(".vs.", filtered0$Var1, ignore.case=F, invert=TRUE),] #intra_Beta
-       filtered2<-filtered0[grep(".vs.", filtered0$Var1, ignore.case=F),]  # inter_Beta
-       filtered3<-filtered0[grep(row.names(otu_table(meta_tables[[i]])),filtered0$Var1, ignore.case=F),]
-    
-           for (r in unique(filtered2$Var1)) { 
-            corrected<-(filtered2[grep(r, filtered2$Var1, ignore.case=F, invert=FALSE),]$Freq)-(((filtered1[grep(unlist(strsplit(r,".vs."))[1], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq)+(filtered1[grep(unlist(strsplit(r,".vs."))[2], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq))/2)
+    for (w in unique(as.data.frame.table(t(as.data.frame(Data_quantile_all[[i]], optional = TRUE)))$Var2)) {
+        ww<-paste("^",w,"$",sep = "")
+        
+        filtered0<-as.data.frame.table(t(as.data.frame(Data_quantile_all[[i]], optional = TRUE)))[grep(ww, as.data.frame.table(t(as.data.frame(Data_quantile_all[[i]], optional = TRUE)))$Var2, ignore.case=F),] #Quantile region
+        filtered1<-filtered0[grep(".vs.", filtered0$Var1, ignore.case=F, invert=TRUE),] #intra_Beta
+        filtered2<-filtered0[grep(".vs.", filtered0$Var1, ignore.case=F),]  # inter_Beta
+        filtered3<-filtered0[grep(row.names(otu_table(meta_tables[[i]])),filtered0$Var1, ignore.case=F),]
+        
+        for (r in unique(filtered2$Var1)) { 
+            corrected<-(filtered2[grep(paste("^",r,"$", sep=""), filtered2$Var1, ignore.case=F, invert=FALSE),]$Freq)-(((filtered1[grep(unlist(strsplit(paste("^",r,"$", sep=""),".vs."))[1], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq)+(filtered1[grep(unlist(strsplit(paste("^",r,"$", sep=""),".vs."))[2], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq))/2)
             QuantileTable <-rbind(QuantileTable,c(paste("Corrected_",r,sep = ""),w,corrected))
-             }
-       QuantileTable <- rbind(QuantileTable,c(c(row.names(otu_table(meta_tables[[i]])),w,filtered3$Freq)))
-       }
+        }
+        QuantileTable <- rbind(QuantileTable,c(c(row.names(otu_table(meta_tables[[i]])),w,filtered3$Freq)))
+    }
     
     Quantitable_list[[i]]<- QuantileTable 
     
     MeanTable<-c()
     
-    filtered0<-as.data.frame.table(t(as.data.frame(Data_mean_all[[i]])))[grep(".vs.", as.data.frame.table(t(as.data.frame(Data_mean_all[[i]])))$Var1, ignore.case=F),] 
-    filtered1<-as.data.frame.table(t(as.data.frame(Data_mean_all[[i]])))[grep(".vs.", as.data.frame.table(t(as.data.frame(Data_mean_all[[i]])))$Var1, invert=TRUE,ignore.case=F),] 
+    filtered0<-as.data.frame.table(t(as.data.frame(Data_mean_all[[i]], optional = TRUE)))[grep(".vs.", as.data.frame.table(t(as.data.frame(Data_mean_all[[i]], optional = TRUE)))$Var1, ignore.case=F),] 
+    filtered1<-as.data.frame.table(t(as.data.frame(Data_mean_all[[i]], optional = TRUE)))[grep(".vs.", as.data.frame.table(t(as.data.frame(Data_mean_all[[i]], optional = TRUE)))$Var1, invert=TRUE,ignore.case=F),] 
     
-     for (u in filtered0$Var1) {        
-        corrected<-(filtered2[grep(u, filtered0$Var1, ignore.case=F, invert=FALSE),]$Freq)-(((filtered1[grep(unlist(strsplit(u,".vs."))[1], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq)+(filtered1[grep(unlist(strsplit(u,".vs."))[2], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq))/2)
+    for (u in filtered0$Var1) {        
+        corrected<-(filtered2[grep(paste("^",u,"$", sep=""), filtered0$Var1, ignore.case=F, invert=FALSE),]$Freq)-(((filtered1[grep(unlist(strsplit(paste("^",u,"$", sep=""),".vs."))[1], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq)+(filtered1[grep(unlist(strsplit(paste("^",u,"$", sep=""),".vs."))[2], filtered1$Var1, ignore.case=F, invert=FALSE),]$Freq))/2)
         MeanTable <- rbind(MeanTable,c(paste("Corrected_",u,sep = ""),corrected))
     }
-    meta<-as.data.frame.table(t(as.data.frame(Data_mean_all[[i]])))[grep(row.names(otu_table(meta_tables[[i]])), as.data.frame.table(t(as.data.frame(Data_mean_all[[i]])))$Var1, ignore.case=F, invert=FALSE),]$Freq
+    meta<-as.data.frame.table(t(as.data.frame(Data_mean_all[[i]], optional = TRUE)))[grep(row.names(otu_table(meta_tables[[i]])), as.data.frame.table(t(as.data.frame(Data_mean_all[[i]], optional = TRUE)))$Var1, ignore.case=F, invert=FALSE),]$Freq
     MeanTable <-rbind(MeanTable,c(row.names(otu_table(meta_tables[[i]])),meta))    
     MeanTable_list[[i]]<- MeanTable    
 }
 
- ##Formating the method results for output
+##Formating the method results for output
 
 table<-c()
 table_list<-c()
@@ -262,15 +261,16 @@ for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_met
     table_list<-rbind(table_list,table)
     table<-c()
 }
-    
-    data.frame(table_list)->table_list
-    table_list$V1 <- factor(row.names(table_list), levels = row.names(table_list))
 
-    ##Boxplot visualization of method output
+data.frame(table_list)->table_list
+table_list$V1 <- factor(row.names(table_list), levels = row.names(table_list))
+
+##Boxplot visualization of method output
         
     ggplot(table_list, aes(x=V1, ymin=`V3.0.`, lower=`V3.25.`, middle=`V3.50.`,upper=`V3.75.`, ymax=`V3.100.`),ordered=TRUE) + geom_boxplot(stat="identity")+theme_bw()+theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-  ##Numerical visualization of results of the method 
+
+##Numerical visualization of results of the method 
 
 for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_meta)))," "))))
 {
@@ -280,6 +280,6 @@ for (i in 1:length(unlist(strsplit(as.character(row.names(sample_data(sample_met
     colnames(a)<-paste("Results:",row.names(otu_table(meta_tables[[i]])),"group/","Subsample Size:",  min(sample_sums(merged_otutables[[i]])), sep=" ")
     print(a)
     if (i==length(unlist(strsplit(as.character(row.names(sample_data(sample_meta)))," ")))){
-    print("If the corrected inter-beta value > Meta intra-beta value, then, the sample pairs are significantly different. more detail in Gülay et al., 2015")
+        print("If the corrected inter-beta value > Meta intra-beta value, then, the sample pairs are significantly different. more detail in Gülay et al., 2015")
     }
 } 
