@@ -49,7 +49,7 @@
 #a phylogenetic tree; select the distance method from below list rather than "unifrac")
 
 ## read.table("otutable_for_R_code.txt", header = TRUE)->sample_txt
-## otu_table(sample_otutable.txt, taxa_are_rows=TRUE)->sample_biom
+## otu_table(sample_txt.txt, taxa_are_rows=TRUE)->sample_biom
 ## import_qiime_sample_data("Sample_data.txt")->b
 ## read_tree("rep_set_from_unaligned.tree")->c ##If you have the phylogenetic tree.
 ##An example otutable: column names are samples, row names are species (could also be species names), values are species counts:
